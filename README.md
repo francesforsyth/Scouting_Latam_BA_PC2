@@ -1,5 +1,4 @@
-[INFORME.md](https://github.com/user-attachments/files/29412180/INFORME.md)
-# Scouting_Latam_BA_PC2# Scouting LATAM — Inteligencia de Mercado Deportivo
+# Scouting LATAM — Inteligencia de Mercado Deportivo
 
 **AD3010 · Business Analytics · Grupo 3**
 Detectar jugadores **subvalorados** de Latinoamérica para un fondo de inversión deportivo, comparando un **valor justo modelado** contra el **precio de mercado real**.
@@ -52,6 +51,16 @@ Negativo → **barato → comprar**.
 | Transfermarkt (jugadores) | `players.csv` | 47 702 | Precio real, caps, posición |
 | Transfermarkt (histórico) | `player_valuations.csv` | 616 377 | Serie de valuaciones (backtest, PA5) |
 | World Bank | `API_NY.GDP.PCAP.CD…csv` | 266 países | PIB per cápita (contexto, PA4) |
+
+### Descarga de los datasets
+
+- **FIFA / EA Sports FC 24 — Complete Player Dataset** (Stefano Leone) → archivo `male_players.csv` (incluye todas las versiones FIFA 15–24 vía la columna `fifa_version`).
+  https://www.kaggle.com/datasets/stefanoleone992/ea-sports-fc-24-complete-player-dataset
+- **Transfermarkt — Football Data** (David Cariboo, *player-scores*) → archivos `players.csv` y `player_valuations.csv` (precios reales, `international_caps` e histórico mensual de valuaciones).
+  https://www.kaggle.com/datasets/davidcariboo/player-scores
+  *(Espejo del código/datos en GitHub: https://github.com/dcaribou/transfermarkt-datasets)*
+- **World Bank — PIB per cápita (US$ corrientes), indicador `NY.GDP.PCAP.CD`** → archivo `API_NY.GDP.PCAP.CD_*.csv` (descargar "CSV" desde la página del indicador).
+  https://data.worldbank.org/indicator/NY.GDP.PCAP.CD
 
 ```python
 df_fifa_raw = pd.read_csv(FIFA_FILE, low_memory=False)   # 180 021
@@ -377,7 +386,7 @@ Business_Analytics_PC1/
 └── data/                          ← CSV (no versionados; ver rutas abajo)
 ```
 
-**Datos requeridos** (en `data/` o Google Drive): `male_players.csv` (FIFA), `players.csv` y `player_valuations.csv` (Transfermarkt), `API_NY.GDP.PCAP.CD_*.csv` (World Bank).
+**Datos requeridos** (en `data/` o Google Drive): `male_players.csv` (FIFA), `players.csv` y `player_valuations.csv` (Transfermarkt), `API_NY.GDP.PCAP.CD_*.csv` (World Bank). Links de descarga en la [sección 2](#2-datos-y-fuentes).
 
 **Stack:** Python · pandas · numpy · scikit-learn (`LinearRegression`, `LogisticRegression`, `DecisionTreeClassifier`, `RandomForestClassifier`, `KMeans`, `StandardScaler`, `train_test_split`) · matplotlib. Ejecutar las celdas en orden; el Bloque 0 construye `base` y cada PA depende de la anterior.
 
