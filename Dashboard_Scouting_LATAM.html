@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Scouting LATAM — Comprar / Vender</title>
+<style>
+  :root{
+    --bg:#F7F6F2; --surface:#FFFFFF; --surface2:#F1EFE8; --tert:#E8E6DE;
+    --ink:#1C2024; --muted:#5F5E5A; --hint:#888780;
+    --teal:#0F6E56; --tealbg:#E1F5EE; --red:#A32D2D; --redbg:#FCEBEB;
+    --blue:#185FA5; --bd:rgba(0,0,0,.12); --bd2:rgba(0,0,0,.22);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5; padding:24px;}
+  .wrap{max-width:1100px; margin:0 auto;}
+  h1{font-size:22px; font-weight:600; margin:0 0 2px;}
+  .sub{font-size:13px; color:var(--muted); margin:0 0 20px;}
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px;}
+  .kpi{background:var(--surface2); border-radius:10px; padding:16px;}
+  .kpi .l{font-size:13px; color:var(--muted); margin:0 0 6px;}
+  .kpi .v{font-size:24px; font-weight:600; margin:0;}
+  .kpi .s{font-size:11px; color:var(--hint); margin:2px 0 0;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+  .card{background:var(--surface); border:.5px solid var(--bd); border-radius:12px; padding:16px 20px;}
+  .card h3{font-size:13px; font-weight:600; margin:0 0 12px;}
+  .bar{display:flex; align-items:center; gap:8px; margin-bottom:7px;}
+  .bar .bl{font-size:12px; width:96px; flex-shrink:0; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bar .bt{flex:1; background:var(--tert); border-radius:4px; height:16px; overflow:hidden;}
+  .bar .bf{height:100%; opacity:.88;}
+  .bar .bv{font-size:12px; font-weight:600; width:22px; text-align:right;}
+  .controls{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
+  select{font-size:13px; padding:7px 10px; border:.5px solid var(--bd2); border-radius:8px; background:var(--surface); color:var(--ink); min-width:120px;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--muted); border-bottom:.5px solid var(--bd2); padding:6px 8px; font-weight:600;}
+  td{padding:6px 8px; border-bottom:.5px solid var(--bd);}
+  .tr{text-align:right;}
+  .pill{font-size:11px; font-weight:600; padding:2px 9px; border-radius:8px; white-space:nowrap;}
+  .scroll{overflow-x:auto;}
+  .rc{font-size:12px; color:var(--hint); margin:10px 0 0;}
+  .foot{font-size:11px; color:var(--hint); margin-top:18px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Scouting LATAM — Comprar / Vender</h1>
+  <p class="sub">Inteligencia de mercado para el fondo · datos reales del modelo · Grupo 8 · AD3010</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="row2">
+    <div class="card"><h3>Por país</h3><div id="byCountry"></div></div>
+    <div class="card"><h3>Perfiles de cartera (compra)</h3><div id="byProfile"></div></div>
+  </div>
+  <div class="card">
+    <div class="controls">
+      <h3 style="margin:0;">Mapa de jugadores</h3>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <select id="fRec"></select><select id="fCountry"></select><select id="fProfile"></select><select id="fPos"></select>
+      </div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th>Acción</th><th>Jugador</th><th>País</th><th>Pos.</th><th class="tr">Edad</th>
+          <th class="tr">Precio</th><th class="tr">Valor justo</th><th class="tr">Vale</th><th>Perfil</th>
+        </tr></thead><tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="rc" id="rowcount"></p>
+  </div>
+  <p class="foot">Dashboard de referencia · construido sobre el modelo de precio justo (FIFA 24 × Transfermarkt × World Bank)</p>
+</div>
+<script>
+const RAW=[["F. Farías","Argentina",1,20,2.5,11.42,4.6,0,2],["A. Veliz","Argentina",0,19,3.5,13.86,4.0,0,1],["A. Velasco","Argentina",1,20,2.8,10.97,3.9,0,2],["A. Martegani","Argentina",1,23,0.3,3.28,10.9,0,2],["J. Sforza","Argentina",1,21,1.5,4.42,2.9,0,1],["L. Giaccone","Argentina",1,22,1.2,3.53,2.9,0,2],["R. Ruiz Rodríguez","Argentina",0,23,0.6,2.87,4.8,0,2],["E. Roldán","Argentina",1,22,0.35,3.0,8.6,0,2],["J. Gauto","Argentina",1,19,1.0,4.76,4.8,0,1],["S. Toloza","Argentina",1,20,0.4,3.69,9.2,0,0],["F. Watson","Argentina",1,20,0.6,3.69,6.2,0,0],["C. Castro Devenish","Colombia",2,22,0.8,2.63,3.3,0,2],["C. Ferreira","Argentina",1,23,0.3,1.97,6.6,0,2],["R. Márquez","Argentina",1,21,0.12,2.63,21.0,0,2],["N. Meriano","Argentina",2,22,0.45,2.23,5.0,0,2],["S. Medina","Argentina",1,23,0.35,1.83,5.2,0,2],["J. Thompson","Chile",0,18,1.0,3.74,3.7,0,1],["J. Carrillo","Mexico",1,21,0.6,2.27,3.8,0,1],["G. Infantino","Argentina",0,20,0.5,2.76,5.5,0,1],["F. Orozco","Argentina",1,21,0.8,2.27,2.8,0,1],["I. Cortez","Argentina",2,23,0.15,1.42,9.4,0,2],["N. Paz","Argentina",2,20,0.5,2.17,4.3,0,0],["B. Barros Schelotto","Argentina",2,23,0.17,1.31,7.5,0,2],["I. Maestro Puch","Argentina",0,19,0.65,2.82,4.3,0,1],["J. Bennette","Costa Rica",1,19,0.6,2.45,4.1,0,1],["M. Zalazar","Argentina",1,22,0.5,1.62,3.2,0,0],["M. Luciano","Argentina",2,19,0.1,2.14,21.4,0,0],["M. Seoane","Argentina",1,19,0.5,1.93,3.9,0,0],["T. González","Argentina",0,20,0.28,1.8,6.5,0,0],["J. Pignani","Argentina",2,21,0.12,1.39,11.1,0,0],["F. Perruzzi","Argentina",1,22,0.25,1.23,4.9,0,2],["F. Lo Celso","Argentina",1,23,0.03,1.02,40.7,0,2],["F. Oviedo","Argentina",0,19,0.28,1.76,6.4,0,0],["L. Cingolani","Argentina",1,22,0.1,0.97,9.7,0,2],["T. Ortíz","Argentina",1,23,0.2,0.8,4.0,0,2],["J. Mina","Ecuador",1,21,0.1,1.03,10.3,0,2],["J. Cabezas","Colombia",0,19,0.4,1.7,4.3,0,1],["I. Mammini","Argentina",0,20,0.38,1.32,3.5,0,0],["D. Zalazar","Argentina",1,21,0.23,1.0,4.4,0,0],["F. Vega","Argentina",1,21,0.07,1.0,13.3,0,0],["J. Ludueña","Argentina",2,20,0.35,1.08,3.1,0,0],["D. Mastrángelo","Argentina",2,20,0.07,1.08,14.4,0,0],["M. Puig","Argentina",1,22,0.05,0.8,16.0,0,2],["T. Castro","Argentina",1,20,0.17,1.06,6.0,0,0],["M. Brondo","Argentina",0,21,0.03,0.94,37.6,0,2],["M. Esponda","Argentina",1,20,0.28,1.11,4.0,0,0],["T. Olmos","Argentina",2,18,0.2,1.36,6.8,0,0],["T. Rubio","Argentina",2,18,0.4,1.25,3.1,0,0],["S. Luján","Argentina",1,21,0.15,0.76,5.1,0,0],["M. Gómez","Argentina",1,17,0.1,1.51,15.1,0,0],["A. Segovia","Argentina",1,19,0.3,1.09,3.6,0,0],["M. Hernandez","Argentina",0,18,0.03,0.99,39.8,0,0],["G. Flores","Argentina",0,21,0.15,0.53,3.5,0,0],["F. Reyes Marizán","Dominican Republic",2,17,0.07,0.54,7.2,0,0],["Edercinho Sepa","Brazil",1,23,0.5,4.09,8.2,0,2],["F. Garcés","Argentina",2,23,1.0,4.21,4.2,0,2],["M. Lacava","Venezuela",0,20,0.2,3.1,15.5,0,0],["A. Marqués","Venezuela",0,22,0.3,1.85,6.2,0,2],["J. Castillo","Venezuela",0,20,0.4,1.73,4.3,0,0],["Vitinho","Brazil",1,23,0.3,0.98,3.3,0,2],["P. Ibáñez","Peru",2,22,0.05,0.99,19.8,0,2],["A. Rodriguez","Venezuela",1,19,0.1,1.53,15.3,0,0],["D. Portilla","Chile",1,19,0.03,1.36,54.5,0,0],["A. Contreras","Venezuela",1,22,0.1,0.65,6.5,0,2],["D. Duran","Bolivia",2,20,0.15,0.82,5.5,0,0],["Gabriel Martinelli","Brazil",0,22,4.0,41.59,10.4,0,2],["Antony","Brazil",0,23,0.1,21.69,216.9,0,2],["Murildo Kauê","Brazil",1,23,0.4,7.34,18.4,0,2],["Morato","Brazil",2,22,0.55,7.8,14.2,0,2],["J. Carbonero","Colombia",0,23,0.45,4.38,9.7,0,2],["Abner","Brazil",2,23,0.1,3.91,39.1,0,2],["Gustavo Lobateiro","Brazil",1,23,0.4,2.77,6.9,0,2],["J. Solís","Colombia",1,18,0.01,4.11,410.8,0,0],["D. Hernández","Colombia",2,23,0.45,1.6,3.6,0,2],["F. Sánchez","Argentina",2,19,0.05,2.8,56.0,0,0],["Y. Quiñones","Colombia",1,20,0.7,2.23,3.2,0,0],["Gabriel Pereira","Brazil",2,23,0.25,0.82,3.3,0,2],["J. Sarmiento","Colombia",1,23,0.2,0.77,3.9,0,2],["J. Asprilla","Colombia",1,20,0.05,1.24,24.9,0,0],["N. Pérez","Argentina",2,23,0.2,7.55,37.8,0,2],["Brenner","Brazil",0,23,0.05,5.32,106.4,0,2],["F. Torres","Uruguay",1,23,0.6,4.65,7.8,0,2],["A. Álvarez Martínez","Uruguay",0,22,0.4,4.71,11.8,0,2],["A. Arroyo","Colombia",2,23,0.25,2.36,9.4,0,2],["Y. Chacón","Venezuela",0,20,0.05,2.76,55.3,0,0],["E. López","Argentina",2,22,0.4,1.58,3.9,0,2],["J. García","Argentina",2,21,0.15,1.62,10.8,0,2],["F. Flores","Argentina",2,21,0.3,1.02,3.4,0,0],["A. Vera","Uruguay",1,19,0.3,1.12,3.7,0,0],["C. Valencia","Ecuador",1,23,0.1,0.4,4.0,0,2],["J. Guerra","Bolivia",2,19,25.0,0.37,0.0,1,3],["L. Arenas","Venezuela",0,24,40.0,0.65,0.0,1,3],["C. Romero","Bolivia",2,21,25.0,0.46,0.0,1,3],["Bruno Sávio","Brazil",0,28,27.0,0.6,0.0,1,3],["I. Gavilán","Paraguay",1,20,7.5,0.22,0.0,1,3],["R. Celis","Venezuela",1,27,22.0,0.67,0.0,1,3],["Renaldo Justinho","Brazil",1,27,25.0,0.82,0.0,1,3],["J. Panichelli","Argentina",0,20,35.0,1.28,0.0,1,3],["Rodrigo Henrique","Brazil",1,29,5.0,0.22,0.0,1,3],["J. Silva","Venezuela",2,26,2.7,0.13,0.0,1,3],["J. Vargas","Bolivia",1,27,7.5,0.35,0.0,1,3],["André Luiz","Brazil",0,21,28.0,1.39,0.1,1,3],["Léo Scienza","Brazil",0,24,9.0,0.49,0.1,1,3],["S. Ramos Mingo","Argentina",2,21,12.0,0.81,0.1,1,3],["A. Martínez","Chile",1,29,3.0,0.22,0.1,1,3],["N. Ordaz","Mexico",0,19,2.0,0.15,0.1,1,3],["E. Barrenechea","Argentina",1,22,15.0,1.14,0.1,1,3],["Bruno Viana","Brazil",2,28,27.0,2.27,0.1,1,3],["S. Castro","Argentina",0,18,35.0,3.08,0.1,1,3],["R. Sanchez","Uruguay",0,19,25.0,2.23,0.1,1,3],["O. Bosso","Chile",2,29,3.5,0.32,0.1,1,3],["J. Flores","Bolivia",1,19,5.0,0.47,0.1,1,3],["Leôncio Lobeiro","Brazil",0,23,20.0,1.99,0.1,1,3],["Ricardo Ryller","Brazil",1,29,7.0,0.7,0.1,1,3],["J. Rodríguez","Argentina",1,33,1.0,0.1,0.1,1,3],["G. Alfaro","Peru",2,20,5.0,0.52,0.1,1,3],["D. Osorio","Chile",0,19,10.0,1.06,0.1,1,3],["Jô Batista","Brazil",0,28,3.0,0.34,0.1,1,3],["Max","Brazil",1,22,9.0,1.01,0.1,1,3],["J. Barinaga","Argentina",1,23,3.5,0.43,0.1,1,3]];
+const POS=['Delantero','Mediocampista','Defensa'],PROF=['Apuesta joven','Joya consagrada','Valor maduro','\u2014'],RECN=['COMPRAR','VENDER'];
+const DATA=RAW.map(r=>({name:r[0],country:r[1],pos:POS[r[2]],age:r[3],price:r[4],fair:r[5],mult:r[6],rec:RECN[r[7]],perfil:PROF[r[8]]}));
+const REC={'COMPRAR':{bg:'var(--tealbg)',fg:'var(--teal)'},'VENDER':{bg:'var(--redbg)',fg:'var(--red)'}};
+const PROFC={'Apuesta joven':'var(--red)','Joya consagrada':'var(--teal)','Valor maduro':'var(--blue)','\u2014':'var(--hint)'};
+const $=id=>document.getElementById(id);
+const fmtM=v=>'\u20ac'+v.toFixed(1)+'M';
+const median=a=>{if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const uniq=k=>[...new Set(DATA.map(r=>r[k]).filter(v=>v&&v!=='\u2014'))].sort();
+function kpis(rows){
+  const buy=rows.filter(r=>r.rec==='COMPRAR'),sell=rows.filter(r=>r.rec==='VENDER');
+  const upside=buy.reduce((s,r)=>s+(r.fair-r.price),0);
+  const discMed=median(buy.map(r=>(1-r.price/r.fair)*100)),multMed=median(buy.map(r=>r.mult));
+  const cards=[['A comprar',buy.length,'subvalorados','var(--teal)'],['A vender / evitar',sell.length,'sobrevalorados','var(--red)'],
+    ['Descuento mediano','-'+Math.round(discMed)+'%','bajo su valor','var(--ink)'],['Upside total',fmtM(upside),'a capturar','var(--ink)'],
+    ['Valen (mediana)','\u00d7'+multMed.toFixed(1),'lo que cuestan','var(--ink)']];
+  $('kpis').innerHTML=cards.map(([l,v,s,c])=>'<div class="kpi"><p class="l">'+l+'</p><p class="v" style="color:'+c+'">'+v+'</p><p class="s">'+s+'</p></div>').join('');
+}
+function bars(el,counts,colorFn){
+  const max=Math.max(...Object.values(counts),1);
+  const e=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  el.innerHTML=e.length?e.map(([k,v])=>{const col=colorFn?colorFn(k):'var(--blue)';
+    return '<div class="bar"><span class="bl">'+k+'</span><div class="bt"><div class="bf" style="width:'+(v/max*100)+'%; background:'+col+'"></div></div><span class="bv">'+v+'</span></div>';}).join(''):'<p style="font-size:12px;color:var(--hint);margin:0;">Sin datos</p>';
+}
+function countBy(rows,key){const o={};rows.forEach(r=>{const v=r[key];if(v&&v!=='\u2014')o[v]=(o[v]||0)+1;});return o;}
+function vale(r){if(r.rec==='COMPRAR')return '<span style="color:var(--teal);font-weight:600;">\u00d7'+r.mult.toFixed(1)+'</span>';
+  return '<span style="color:var(--red);font-weight:600;">\u00d7'+(r.price/r.fair).toFixed(0)+' de m\u00e1s</span>';}
+function table(rows){
+  $('tbody').innerHTML=rows.map(r=>{const rc=REC[r.rec];
+    return '<tr><td><span class="pill" style="background:'+rc.bg+';color:'+rc.fg+'">'+r.rec+'</span></td><td style="font-weight:600;">'+r.name+'</td><td style="color:var(--muted);">'+r.country+'</td><td style="color:var(--muted);">'+r.pos+'</td><td class="tr">'+r.age+'</td><td class="tr">'+fmtM(r.price)+'</td><td class="tr" style="color:var(--muted);">'+fmtM(r.fair)+'</td><td class="tr">'+vale(r)+'</td><td><span style="color:'+PROFC[r.perfil]+';font-size:12px;">'+r.perfil+'</span></td></tr>';}).join('');
+  $('rowcount').textContent=rows.length+' jugadores mostrados';
+}
+function opts(el,label,vals){el.innerHTML='<option value="">'+label+'</option>'+vals.map(v=>'<option value="'+v+'">'+v+'</option>').join('');}
+opts($('fRec'),'Comprar y vender',['COMPRAR','VENDER']);
+opts($('fCountry'),'Todos los pa\u00edses',uniq('country'));
+opts($('fProfile'),'Todos los perfiles',uniq('perfil'));
+opts($('fPos'),'Todas las posiciones',uniq('pos'));
+function render(){
+  const rec=$('fRec').value,c=$('fCountry').value,p=$('fProfile').value,pos=$('fPos').value;
+  let rows=DATA.filter(r=>(!rec||r.rec===rec)&&(!c||r.country===c)&&(!p||r.perfil===p)&&(!pos||r.pos===pos));
+  rows.sort((a,b)=>(a.rec===b.rec)?b.mult-a.mult:(a.rec==='COMPRAR'?-1:1));
+  kpis(rows);bars($('byCountry'),countBy(rows,'country'));bars($('byProfile'),countBy(rows.filter(r=>r.rec==='COMPRAR'),'perfil'),k=>PROFC[k]);table(rows.slice(0,80));
+}
+['fRec','fCountry','fProfile','fPos'].forEach(id=>$(id).addEventListener('change',render));
+render();
+</script>
+</body>
+</html>
