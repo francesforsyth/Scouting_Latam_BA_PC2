@@ -5,8 +5,6 @@ Detectar jugadores **subvalorados** de Latinoamérica para un fondo de inversió
 
 `FIFA 24 (EA Sports)` · `Transfermarkt` · `World Bank`
 
-> Las figuras se muestran desde la carpeta `figuras/` del repositorio. Este archivo puede renombrarse a `README.md` para que sea la portada del repo.
-
 ---
 
 ## Resumen ejecutivo (TL;DR)
