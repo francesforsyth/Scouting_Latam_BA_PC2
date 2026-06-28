@@ -5,6 +5,8 @@ Detectar jugadores **subvalorados** de Latinoamérica para un fondo de inversió
 
 `FIFA 24 (EA Sports)` · `Transfermarkt` · `World Bank`
 
+> Las figuras se muestran desde la carpeta `figuras/` del repositorio. Este archivo puede renombrarse a `README.md` para que sea la portada del repo.
+
 ---
 
 ## Resumen ejecutivo (TL;DR)
@@ -129,7 +131,7 @@ candidatos = base[base['is_latam'] & base['is_matched'] & (base['tm_value_eur'] 
  →    303  jóvenes ≤23 con precio   (151 mediocampistas · 93 defensas · 59 delanteros)
 ```
 
-📊 *Figura:* `figuras/embudo.png`
+![Embudo: del universo global a los candidatos jóvenes LATAM](figuras/embudo.png)
 **Interpretación:** de ~16 000 jugadores nos concentramos en **303** jóvenes LATAM con precio. A los ≤23 el techo todavía es amplio (margen medio 9,9) y hay masa suficiente para diversificar. *Filtrar = dónde cazar; el modelo = a cuál disparar.*
 
 ---
@@ -140,7 +142,7 @@ candidatos = base[base['is_latam'] & base['is_matched'] & (base['tm_value_eur'] 
 
 **Método:** correlación de Pearson + regresión lineal simple (calidad → precio).
 
-📊 *Figura:* `figuras/pa1_talento_precio.png`
+![El mercado premia el talento, pero la calidad explica solo el 24% del precio](figuras/pa1_talento_precio.png)
 
 | Métrica | Valor | Lectura |
 |---|---|---|
@@ -167,7 +169,9 @@ candidatos = base[base['is_latam'] & base['is_matched'] & (base['tm_value_eur'] 
 | Margen (growth_room) | +0,14 |
 | Edad | **−0,25** |
 
-📊 *Figura:* `figuras/pa2_correlaciones.png` y `figuras/pa2_curva_edad.png`
+![Correlación de cada variable con el precio de mercado](figuras/pa2_correlaciones.png)
+
+![El valor hace pico cerca de los 21 años y se deprecia después](figuras/pa2_curva_edad.png)
 **Interpretación:** el **potencial** pesa más que el talento actual. La **edad** correlaciona negativo: el valor hace pico ~21 años y se deprecia rápido. *Comprar joven, antes del pico, es donde está el margen.*
 
 ### El confound del margen — a igual talento, el mercado sí paga el margen
@@ -179,7 +183,7 @@ El margen parecía irrelevante (**+0,14**)… pero era una trampa estadística:
 corr_edad_margen = base['age'].corr(base['growth_room'])   # ≈ -0.88
 ```
 
-📊 *Figura:* `figuras/pa2_confound.png`
+![A igual talento, el mercado sí paga más por margen de crecimiento](figuras/pa2_confound.png)
 **Interpretación:** edad y margen correlacionan **−0,88** — los de más margen son justo los más jóvenes y de menor overall, así que el efecto del margen se confundía con el de la edad. Al comparar **a igual talento** (estratificando por overall), el margen **sí** paga. Conclusión metodológica: necesitamos un modelo que controle **todas las variables a la vez** → PA3.
 
 ---
@@ -239,7 +243,7 @@ mu, sd = mm.mean(), mm.std()          # μ ≈ -0.001 ,  σ ≈ 0.452
 disc1  = (1 - 10**(-sd)) * 100        # 1σ ≈ 65%
 ```
 
-📊 *Figura:* `figuras/pa3_histograma_mispricing.png`
+![Histograma del mispricing: una campana centrada en cero con dos colas](figuras/pa3_histograma_mispricing.png)
 **Interpretación:** la media ≈ 0 confirma que el modelo **no está sesgado**. La desviación típica (1σ ≈ 0,452) equivale a un ~**65% de descuento/sobreprecio**. La mayoría cotiza cerca de su valor justo (el centro); el negocio vive en las **dos colas**. *¿Por qué log?* Un desvío relativo pesa igual en un jugador de €1M y en uno de €100M.
 
 ### 7.2 La señal 1σ → 90 candidatos
@@ -251,7 +255,7 @@ base['signal'] = np.select(
     ['SUBVALORADO', 'SOBREVALORADO'], default='NEUTRAL')
 ```
 
-📊 *Figura:* `figuras/pa3_brecha_top8.png`
+![Gráfico de brecha: precio actual (gris) vs. valor justo (verde) de los top subvalorados](figuras/pa3_brecha_top8.png)
 
 | Segmento (mundo, con precio) | Conteo |
 |---|---|
@@ -282,7 +286,9 @@ feats = ['log_gdp', 'caps', 'league_level']
 clf = LogisticRegression(class_weight='balanced', max_iter=1000).fit(Xtr_s, ytr)
 ```
 
-📊 *Figura:* `figuras/pa4_importancia.png` y `figuras/pa4_arbol.png`
+![Importancia de variables (Random Forest): país, fama y nivel de liga](figuras/pa4_importancia.png)
+
+![Árbol de decisión: qué combinación de contexto concentra las gangas](figuras/pa4_arbol.png)
 
 | Importancia (Random Forest) | Peso |
 |---|---|
@@ -309,7 +315,7 @@ def value_asof(vals, t):
     return vals[vals['date'] <= t].sort_values('date').groupby('player_id').tail(1)...
 ```
 
-📊 *Figura:* `figuras/pa5_convergencia.png`
+![Serie de tiempo: el mercado corrige hacia el valor justo (los baratos suben, los caros bajan)](figuras/pa5_convergencia.png)
 
 | Segmento | Apreciación 12m | n | Edad mediana |
 |---|---|---|---|
@@ -333,7 +339,9 @@ X = StandardScaler().fit_transform(clu[feats])
 clu['cluster'] = KMeans(n_clusters=3, n_init=10, random_state=42).fit_predict(X)
 ```
 
-📊 *Figura:* `figuras/pa6_codo_silueta.png` y `figuras/pa6_perfiles.png`
+![Método del codo y coeficiente de silueta para elegir k](figuras/pa6_codo_silueta.png)
+
+![En qué se diferencia cada perfil de inversión](figuras/pa6_perfiles.png)
 
 **Por qué k=3:** el codo no marca un quiebre brusco y la silueta deja 3 y 4 casi empatados; con ~90 candidatos, **tres** grupos dan perfiles interpretables y con masa suficiente, mientras que cuatro fragmenta en grupos demasiado chicos para defender. *El "mejor k" de negocio no siempre es el de la silueta.*
 
