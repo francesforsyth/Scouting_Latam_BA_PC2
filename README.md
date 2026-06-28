@@ -5,6 +5,8 @@ Detectar jugadores **subvalorados** de Latinoamérica para un fondo de inversió
 
 `FIFA 24 (EA Sports)` · `Transfermarkt` · `World Bank`
 
+> Las figuras se muestran desde la carpeta `figuras/` del repositorio. Este archivo puede renombrarse a `README.md` para que sea la portada del repo.
+
 ---
 
 ## Resumen ejecutivo (TL;DR)
@@ -382,17 +384,26 @@ clu['cluster'] = KMeans(n_clusters=3, n_init=10, random_state=42).fit_predict(X)
 
 ## 14. Reproducibilidad
 
+El notebook **descarga los datos automáticamente** desde Kaggle y el Banco Mundial — **no requiere Google Drive ni CSVs locales**.
+
 ```
-Business_Analytics_PC1/
-├── INFORME.md                     ← este archivo
-├── Notebook_Scouting_LATAM.ipynb  ← pipeline completo (Bloque 0 → PA6)
-├── figuras/                       ← exports de los gráficos del notebook
-└── data/                          ← CSV (no versionados; ver rutas abajo)
+Scouting_Latam_BA_PC2/
+├── README.md                              ← este archivo
+├── Notebook_Scouting_LATAM_Kaggle.ipynb   ← pipeline completo (Bloque 0 → PA6), carga directa desde Kaggle
+├── Scouting_PPT.pdf                       ← presentación de la defensa
+├── requirements.txt                       ← dependencias (incluye kagglehub)
+└── figuras/                               ← gráficos del informe
 ```
 
-**Datos requeridos** (en `data/` o Google Drive): `male_players.csv` (FIFA), `players.csv` y `player_valuations.csv` (Transfermarkt), `API_NY.GDP.PCAP.CD_*.csv` (World Bank). Links de descarga en la [sección 2](#2-datos-y-fuentes).
+**Cómo ejecutar:**
 
-**Stack:** Python · pandas · numpy · scikit-learn (`LinearRegression`, `LogisticRegression`, `DecisionTreeClassifier`, `RandomForestClassifier`, `KMeans`, `StandardScaler`, `train_test_split`) · matplotlib. Ejecutar las celdas en orden; el Bloque 0 construye `base` y cada PA depende de la anterior.
+1. Abre el notebook en Google Colab (o local con Jupyter). En local: `pip install -r requirements.txt`.
+2. Consigue un token de Kaggle: <https://www.kaggle.com/settings> → **API** → **Create New Token** (descarga `kaggle.json`, que trae tu `username` y tu `key`).
+3. Ejecuta las celdas en orden. La celda de carga **te pide el `username` y el `key` como _input_** (el key se ingresa oculto) y con eso baja FIFA y Transfermarkt desde Kaggle, y el PIB desde el Banco Mundial. *Alternativas para no escribirlo cada vez:* variables de entorno `KAGGLE_USERNAME` / `KAGGLE_KEY`, un `~/.kaggle/kaggle.json`, o *Secrets* (🔑) en Colab.
+
+**Datasets (se descargan solos, ver §2):** FIFA `stefanoleone992/ea-sports-fc-24-complete-player-dataset` · Transfermarkt `davidcariboo/player-scores` · World Bank `NY.GDP.PCAP.CD`.
+
+**Stack:** Python · pandas · numpy · scikit-learn (`LinearRegression`, `LogisticRegression`, `DecisionTreeClassifier`, `RandomForestClassifier`, `KMeans`, `StandardScaler`, `train_test_split`) · matplotlib · **kagglehub** (descarga de datasets) · openpyxl (export a Excel). El Bloque 0 construye `base` y cada PA depende de la anterior.
 
 ---
 
